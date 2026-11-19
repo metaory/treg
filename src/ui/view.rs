@@ -18,7 +18,7 @@ const KEYS: [(&str, &str); 6] = [
 pub fn draw(frame: &mut Frame, app: &mut App) {
     let [top, main, bottom] =
         Layout::vertical([Constraint::Length(1), Constraint::Fill(1), Constraint::Length(1)]).areas(frame.area());
-    let [left, right] = Layout::horizontal([Constraint::Percentage(45), Constraint::Fill(1)]).areas(main);
+    let [left, right] = Layout::horizontal([Constraint::Ratio(2, 3), Constraint::Ratio(1, 3)]).areas(main);
     prompt(frame, top, "› ".bold().magenta(), &app.query.text, app.query.cursor);
     results(frame, left, app);
     let details = app.selected().map_or_default(|t| details(t, app.index.indexed_at));
