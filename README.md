@@ -25,13 +25,13 @@ You have tons of tools installed many with weird names that you forget it next w
 
 Grab an archive from [Releases](https://github.com/metaory/treg/releases/latest)
 
-| Platform     | Target                       |
-| ------------ | ---------------------------- |
-| Linux x86_64 | `x86_64-unknown-linux-musl`  |
-| Linux arm64  | `aarch64-unknown-linux-musl` |
-| macOS Intel  | `x86_64-apple-darwin`        |
-| macOS Apple  | `aarch64-apple-darwin`       |
-| Windows      | `x86_64-pc-windows-msvc`     |
+| Platform     | Target                                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Linux x86_64 | [x86_64-unknown-linux-musl](https://github.com/metaory/treg/releases/latest/download/treg-x86_64-unknown-linux-musl.tar.gz)   |
+| Linux arm64  | [aarch64-unknown-linux-musl](https://github.com/metaory/treg/releases/latest/download/treg-aarch64-unknown-linux-musl.tar.gz) |
+| macOS Intel  | [x86_64-apple-darwin](https://github.com/metaory/treg/releases/latest/download/treg-x86_64-apple-darwin.tar.gz)               |
+| macOS Apple  | [aarch64-apple-darwin](https://github.com/metaory/treg/releases/latest/download/treg-aarch64-apple-darwin.tar.gz)             |
+| Windows      | [x86_64-pc-windows-msvc](https://github.com/metaory/treg/releases/latest/download/treg-x86_64-pc-windows-msvc.zip)            |
 
 ```sh
 target=x86_64-unknown-linux-musl

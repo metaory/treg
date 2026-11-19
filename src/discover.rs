@@ -5,7 +5,6 @@ use crate::model::{Exe, Tool};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
 struct Found {
@@ -35,10 +34,13 @@ fn scan(dir: &Path) -> Vec<Found> {
         .filter_map(Result::ok)
         .filter_map(|e| {
             let path = e.path();
-            let name = e.file_name().to_str()?.to_owned();
+            let raw = e.file_name().to_str()?.to_owned();
             let meta = fs::metadata(&path).ok()?;
-            let exec = meta.is_file() && meta.permissions().mode() & 0o111 != 0;
-            exec.then(|| fs::canonicalize(&path).ok()).flatten().map(|canon| Found { name, path, canon })
+            marked(&meta, &raw).then(|| fs::canonicalize(&path).ok()).flatten().map(|canon| Found {
+                name: command(&raw),
+                path,
+                canon,
+            })
         })
         .collect()
 }
@@ -61,7 +63,7 @@ fn group(found: Vec<Found>, now: u64) -> Vec<Tool> {
 }
 
 fn tool(group: Vec<Found>, now: u64) -> Tool {
-    let is_target = |f: &&Found| f.canon.file_name().and_then(|n| n.to_str()) == Some(f.name.as_str());
+    let is_target = |f: &&Found| f.canon.file_name().and_then(|n| n.to_str()).is_some_and(|n| command(n) == f.name);
     let name = group.iter().find(is_target).unwrap_or(&group[0]).name.clone();
     let exes = group
         .into_iter()
@@ -75,6 +77,34 @@ fn tool(group: Vec<Found>, now: u64) -> Tool {
         .collect();
     Tool { name, exes, ..Tool::default() }
 }
+
+/// Prompt name. Windows keeps a `PATHEXT` suffix on disk (`git.exe`).
+fn command(name: &str) -> String {
+    #[cfg(windows)]
+    let name = Path::new(name).file_stem().and_then(|s| s.to_str()).unwrap_or(name);
+    name.to_owned()
+}
+
+#[cfg(unix)]
+fn marked(meta: &fs::Metadata, _: &str) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+    meta.is_file() && meta.permissions().mode() & 0o111 != 0
+}
+
+#[cfg(windows)]
+fn marked(meta: &fs::Metadata, name: &str) -> bool {
+    let ext = Path::new(name).extension().and_then(|e| e.to_str());
+    meta.is_file()
+        && ext.is_some_and(|ext| pathext().split(';').any(|p| p.trim_start_matches('.').eq_ignore_ascii_case(ext)))
+}
+
+#[cfg(windows)]
+fn pathext() -> String {
+    env::var("PATHEXT").unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into())
+}
+
+#[cfg(not(any(unix, windows)))]
+compile_error!("executable discovery supports unix and windows");
 
 #[cfg(test)]
 mod tests {
